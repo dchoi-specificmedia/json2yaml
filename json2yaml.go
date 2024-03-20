@@ -138,7 +138,7 @@ func (c *converter) writeIndent() {
 	}
 }
 
-func (c *converter) writeValue(v any) error {
+func (c *converter) writeValue(v interface{}) error {
 	switch v := v.(type) {
 	default:
 		c.buf.WriteString("null")
@@ -219,6 +219,13 @@ func (c *converter) writeString(v string) {
 	}
 }
 
+func stringsCut(s, sep string) (before, after string, found bool) {
+	if i := strings.Index(s, sep); i >= 0 {
+		return s[:i], s[i+len(sep):], true
+	}
+	return s, "", false
+}
+
 func (c *converter) writeBlockStyleString(v string) {
 	if c.stack[len(c.stack)-1] == '{' {
 		c.buf.WriteString("? ")
@@ -231,7 +238,7 @@ func (c *converter) writeBlockStyleString(v string) {
 	}
 	c.indent += 2
 	for s := ""; v != ""; {
-		s, v, _ = strings.Cut(v, "\n")
+		s, v, _ = stringsCut(v, "\n")
 		c.buf.WriteByte('\n')
 		if s != "" {
 			c.writeIndent()
